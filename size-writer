@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+// Simple wrapper script for npx
+import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { existsSync } from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Path to the actual CLI script
+const cliPath = join(__dirname, "cli.js");
+
+// Check if the CLI script exists
+if (!existsSync(cliPath)) {
+  console.error("Error: CLI script not found");
+  process.exit(1);
+}
+
+// Execute the CLI script
+const cli = spawn("node", [cliPath, ...process.argv.slice(2)], {
+  stdio: "inherit",
+  shell: true,
+});
+
+cli.on("error", (err) => {
+  console.error("Error executing CLI:", err);
+  process.exit(1);
+});
+
+cli.on("close", (code) => {
+  process.exit(code);
+});

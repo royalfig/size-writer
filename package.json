@@ -1,21 +1,56 @@
 {
-  "name": "size-writer",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@royalfig/size-writer",
+  "version": "1.0.4",
+  "description": "A utility to generate optimal image sizes for the CSS sizes attribute",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "prepublishOnly": "npm test",
+    "start": "node cli.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "css",
+    "responsive-images",
+    "sizes-attribute",
+    "image-optimization",
+    "web-development"
+  ],
+  "author": "Ryan Feigenbaum",
   "license": "MIT",
   "dependencies": {
-    "commander": "^11.0.0",
+    "clipboardy": "^4.0.0",
+    "commander": "^13.1.0",
     "prompts": "^2.4.2",
-    "puppeteer": "^20.9.0"
+    "puppeteer": "^24.6.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   },
   "type": "module",
   "bin": {
-    "size-writer": "./cli.js"
+    "size-writer": "./size-writer"
+  },
+  "files": [
+    "src/",
+    "cli.js",
+    "size-writer",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/royalfig/size-writer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/royalfig/size-writer/issues"
+  },
+  "homepage": "https://github.com/royalfig/size-writer#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "puppeteer"
+    ]
   }
 }
