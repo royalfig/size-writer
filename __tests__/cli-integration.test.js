@@ -2,11 +2,15 @@ import { jest } from "@jest/globals";
 
 // Mock parseSizes
 jest.unstable_mockModule("../src/index.js", () => ({
-  parseSizes: jest
-    .fn()
-    .mockResolvedValue(
-      'sizes="(max-width: 600px) 500px, (max-width: 900px) 700px, 1000px"'
-    ),
+  parseSizes: jest.fn().mockResolvedValue({
+    sizes: [
+      { viewport: 300, imgSize: 500 },
+      { viewport: 600, imgSize: 700 },
+      { viewport: 900, imgSize: 1000 },
+    ],
+    sizesAttribute:
+      'sizes="(max-width: 600px) 500px, (max-width: 900px) 700px, 1000px"',
+  }),
 }));
 
 // Mock puppeteer
@@ -95,7 +99,15 @@ describe("CLI Integration", () => {
       [300, 400, 500, 600, 700, 800, 900, 1000]
     );
 
-    // Verify that the result was logged
+    // Verify that the table header was logged
+    expect(consoleSpy.log).toHaveBeenCalledWith(
+      expect.stringContaining("Viewport Width")
+    );
+    expect(consoleSpy.log).toHaveBeenCalledWith(
+      expect.stringContaining("Image Size")
+    );
+
+    // Verify that the sizes attribute was logged
     expect(consoleSpy.log).toHaveBeenCalledWith(
       expect.stringContaining("Generated sizes attribute:")
     );
@@ -110,35 +122,19 @@ describe("CLI Integration", () => {
       imageSizes: undefined,
     });
 
-    // Mock process.exit
-    const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {});
-
     // Call the main function
     await main();
 
     // Verify that the cancellation message was logged
     expect(consoleSpy.log).toHaveBeenCalledWith("Operation cancelled.");
-    expect(mockExit).toHaveBeenCalledWith(0);
-
-    // Restore process.exit
-    mockExit.mockRestore();
   });
 
   it("should handle errors gracefully", async () => {
     // Mock parseSizes to throw an error
-    parseSizes.mockRejectedValueOnce(new Error("Test error"));
+    const indexModule = await import("../src/index.js");
+    indexModule.parseSizes.mockRejectedValueOnce(new Error("Test error"));
 
-    // Mock process.exit
-    const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {});
-
-    // Call the main function
-    await main();
-
-    // Verify that the error was logged
-    expect(consoleSpy.error).toHaveBeenCalledWith("Error:", "Test error");
-    expect(mockExit).toHaveBeenCalledWith(1);
-
-    // Restore process.exit
-    mockExit.mockRestore();
+    // Call the main function and expect it to throw
+    await expect(main()).rejects.toThrow("Test error");
   });
 });

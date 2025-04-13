@@ -37,14 +37,16 @@ describe("parseSizes", () => {
 
   it("should generate a sizes attribute", async () => {
     const url = "https://example.com";
-    const selector = "test-selector";
+    const selector = "img";
     const imageSizes = [300, 400, 500, 600, 700, 800, 900, 1000];
 
     const result = await parseSizes(url, selector, imageSizes);
 
-    expect(result).toContain("sizes=");
-    expect(result).toContain("max-width");
-    expect(result).toContain("px");
+    expect(result).toHaveProperty("sizes");
+    expect(result).toHaveProperty("sizesAttribute");
+    expect(result.sizesAttribute).toContain("sizes=");
+    expect(result.sizesAttribute).toContain("max-width");
+    expect(result.sizesAttribute).toContain("px");
   });
 
   it("should handle errors gracefully", async () => {

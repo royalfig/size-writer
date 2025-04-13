@@ -103,7 +103,7 @@ export async function main() {
     // Handle cancellation
     if (!responses.url || !responses.selector || !responses.imageSizes) {
       console.log("Operation cancelled.");
-      process.exit(0);
+      return;
     }
 
     const imageSizes = createNumberArray(responses.imageSizes);
@@ -177,7 +177,7 @@ export async function main() {
     }
   } catch (error) {
     console.error("Error:", error.message);
-    process.exit(1);
+    throw error;
   }
 }
 
@@ -185,7 +185,10 @@ export async function main() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   // Parse command line arguments and run the main function
   program.parse();
-  main();
+  main().catch((error) => {
+    console.error("Error:", error.message);
+    process.exit(1);
+  });
 }
 
 function createAsciiGraph(sizes, width = 60, height = 15) {
