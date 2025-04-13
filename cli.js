@@ -114,12 +114,54 @@ export async function main() {
       console.error("Warning: Could not create cache file", error.message);
     }
 
-    console.log("\nAnalyzing image sizes...");
-    const sizesAttribute = await parseSizes(
+    console.log("\nAnalyzing image sizes...\n\n");
+    const { sizes, sizesAttribute } = await parseSizes(
       responses.url,
       responses.selector,
       imageSizes
     );
+
+    // Filter out repeated values
+    const uniqueSizes = sizes.reduce((acc, curr, index) => {
+      if (index === 0 || curr.imgSize !== sizes[index - 1].imgSize) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
+
+    // Calculate column widths
+    const viewportWidth = Math.max(
+      "Viewport Width".length,
+      ...uniqueSizes.map((s) => s.viewport.toString().length)
+    );
+    const imageSizeWidth = Math.max(
+      "Image Size".length,
+      ...uniqueSizes.map((s) => s.imgSize.toString().length)
+    );
+
+    // Create separator line
+    const separator = `+${"-".repeat(viewportWidth + 2)}+${"-".repeat(
+      imageSizeWidth + 2
+    )}+`;
+
+    // Print table header
+    console.log(separator);
+    console.log(
+      `| ${"Viewport Width".padEnd(viewportWidth)} | ${"Image Size".padEnd(
+        imageSizeWidth
+      )} |`
+    );
+    console.log(separator);
+
+    // Print table rows
+    uniqueSizes.forEach(({ viewport, imgSize }) => {
+      console.log(
+        `| ${viewport.toString().padEnd(viewportWidth)} | ${imgSize
+          .toString()
+          .padEnd(imageSizeWidth)} |`
+      );
+    });
+    console.log(separator);
 
     console.log("\nGenerated sizes attribute:");
     console.log(sizesAttribute);
@@ -144,4 +186,48 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // Parse command line arguments and run the main function
   program.parse();
   main();
+}
+
+function createAsciiGraph(sizes, width = 60, height = 15) {
+  // Find min/max values for scaling
+  const minViewport = Math.min(...sizes.map((s) => s.viewport));
+  const maxViewport = Math.max(...sizes.map((s) => s.viewport));
+  const minSize = Math.min(...sizes.map((s) => s.imgSize));
+  const maxSize = Math.max(...sizes.map((s) => s.imgSize));
+
+  // Create empty grid
+  const grid = Array(height)
+    .fill()
+    .map(() => Array(width).fill(" "));
+
+  // Plot points
+  sizes.forEach(({ viewport, imgSize }) => {
+    const x = Math.round(
+      ((viewport - minViewport) / (maxViewport - minViewport)) * (width - 1)
+    );
+    const y = Math.round(
+      ((imgSize - minSize) / (maxSize - minSize)) * (height - 1)
+    );
+    grid[height - 1 - y][x] = "•";
+  });
+
+  // Add axis labels
+  const viewportLabels = sizes
+    .filter((_, i) => i % 8 === 0)
+    .map((s) => s.viewport.toString().padStart(4, " "))
+    .join(" ");
+
+  const sizeLabels = sizes
+    .filter((_, i) => i % 8 === 0)
+    .map((s) => s.imgSize.toString().padStart(4, " "))
+    .join(" ");
+
+  // Convert grid to string
+  const graph = grid.map((row) => row.join("")).join("\n");
+
+  return `
+${graph}
+${" ".repeat(4)}${viewportLabels}
+${" ".repeat(4)}${sizeLabels}
+`;
 }

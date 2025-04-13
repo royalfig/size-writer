@@ -15,16 +15,14 @@ function createNumberArray(str) {
 }
 
 export async function parseSizes(url, selector, imageSizes) {
-  // const imageSizesAsNum = createNumberArray(imageSizes);
-
-  const sizes = await generateSizesAttribute(
+  const { sizes, sizesAttribute } = await generateSizesAttribute(
     url,
     selector,
     imageSizes,
     viewports
   );
 
-  return sizes;
+  return { sizes, sizesAttribute };
 }
 
 async function generateSizesAttribute(url, selector, imageSizes, viewports) {
@@ -54,8 +52,6 @@ async function generateSizesAttribute(url, selector, imageSizes, viewports) {
     }
   }
 
-  console.table(sizes);
-
   await browser.close();
 
   const optimalSizes = [];
@@ -64,7 +60,8 @@ async function generateSizesAttribute(url, selector, imageSizes, viewports) {
     optimalSizes.push(findClosestMatch(size.size, imageSizes));
   }
 
-  return writeSizesAttribute(sizes, optimalSizes);
+  const sizesAttribute = writeSizesAttribute(sizes, optimalSizes);
+  return { sizes, sizesAttribute };
 }
 
 function determineDelta(size, prev) {
@@ -83,8 +80,6 @@ function writeSizesAttribute(sizes, optimalSizes) {
       viewport: sizes[i].viewport,
       imgSize: sizes[i - 1]?.imgSize ? sizes[i - 1].imgSize : sizes[i].imgSize,
     });
-
-    // generatedSizes += `(max-width: ${sizes[i].viewport}px) ${sizes[i - 1]?.imgSize ? sizes[i - 1].imgSize : sizes[i].imgSize}px, `;
   }
 
   if (generatedSizes[0]?.imgSize === generatedSizes[1]?.imgSize) {
