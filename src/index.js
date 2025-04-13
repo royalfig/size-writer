@@ -7,13 +7,6 @@ let viewports = [
   2350, 2400, 2450, 2500, 2550, 2600, 2650,
 ];
 
-function createNumberArray(str) {
-  const arr = str.split(",").map((item) => {
-    return parseInt(item.trim());
-  });
-  return arr;
-}
-
 export async function parseSizes(url, selector, imageSizes) {
   const { sizes, sizesAttribute } = await generateSizesAttribute(
     url,
@@ -62,10 +55,6 @@ async function generateSizesAttribute(url, selector, imageSizes, viewports) {
 
   const sizesAttribute = writeSizesAttribute(sizes, optimalSizes);
   return { sizes, sizesAttribute };
-}
-
-function determineDelta(size, prev) {
-  return Math.abs(((size - prev) / prev) * 100);
 }
 
 function writeSizesAttribute(sizes, optimalSizes) {
